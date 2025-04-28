@@ -205,7 +205,9 @@ if (args.includes('--version') || args.includes('-v')) {
 // Check if we should generate OID file
 if (args.includes('--generate-oid')) {
   const outputPath = args[args.indexOf('--generate-oid') + 1] || 'qxip-snmp.mib';
-  sender.generateOidFile(outputPath);
+  // Create a new sender instance with the correct config for OID generation
+  const oidSender = new SnmpTrapSender(options.loopback ? 'test-config.yaml' : configPath, options);
+  oidSender.generateOidFile(outputPath);
   process.exit(0);
 }
 
