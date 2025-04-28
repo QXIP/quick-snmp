@@ -28,8 +28,14 @@ jobs:
     - name: Build Binary
       run: |
         echo "Building standalone binary..."
-        bun build ./src/index.js --compile --outfile quick-snmp
+        bun build ./src/index.js --compile --minify --outfile quick-snmp
         chmod +x quick-snmp
+
+    - name: Build Binary (Cross-Platform)
+      run: |
+        echo "Building standalone binary..."
+        bun build ./src/index.js --compile --minify --target=bun-linux-arm64 --outfile quick-snmp_arm64
+        bun build ./src/index.js --compile --minify --target=bun-darwin-arm64 --outfile quick-snmp_osx_arm64
 
     - name: Test Binary (version)
       run: |
@@ -42,7 +48,10 @@ jobs:
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        files: quick-snmp
+        files: |
+          quick-snmp
+          quick-snmp_arm64
+          quick-snmp_osx_arm64
         draft: false
         prerelease: false
       env:
