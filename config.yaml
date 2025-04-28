@@ -15,47 +15,41 @@ receivers:
 
 # Monitoring rules
 rules:
-  # CPU usage monitoring
-  - id: "cpuUsage"
+  # Current time monitoring
+  - id: "currentTime"
     oid: "1.1"
-    name: "CPU Usage"
-    type: "integer"
-    command: "top -bn1 | grep 'Cpu(s)' | awk '{print $2}'"
+    name: "Current Time"
+    type: "string"
+    command: "date '+%Y-%m-%d %H:%M:%S'"
     interval: 60
-    thresholds:
-      warning: 70
-      critical: 90
     receivers: ["primary", "backup"]
 
-  # Memory usage monitoring
-  - id: "memoryUsage"
+  # Unix timestamp monitoring
+  - id: "unixTimestamp"
     oid: "1.2"
-    name: "Memory Usage"
+    name: "Unix Timestamp"
     type: "integer"
-    command: "free | grep Mem | awk '{print $3/$2 * 100.0}'"
+    command: "date +%s"
     interval: 60
     thresholds:
-      warning: 80
-      critical: 95
+      warning: 0
+      critical: 0
     receivers: ["primary"]
 
-  # System uptime
-  - id: "uptime"
+  # Day of week monitoring
+  - id: "dayOfWeek"
     oid: "1.3"
-    name: "System Uptime"
+    name: "Day of Week"
     type: "string"
-    command: "uptime -p"
+    command: "date '+%A'"
     interval: 300
     receivers: ["primary", "backup"]
 
-  # Disk usage monitoring
-  - id: "diskUsage"
+  # System timezone monitoring
+  - id: "timezone"
     oid: "1.4"
-    name: "Disk Usage"
-    type: "integer"
-    command: "df / | tail -1 | awk '{print $5}' | sed 's/%//'"
+    name: "System Timezone"
+    type: "string"
+    command: "date '+%Z'"
     interval: 300
-    thresholds:
-      warning: 80
-      critical: 90
     receivers: ["primary"] 

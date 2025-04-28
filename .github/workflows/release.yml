@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build Binary
+
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Setup Bun Runtime
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install Dependencies
+      run: bun install
+
+    - name: Build Binary
+      run: |
+        echo "Building standalone binary..."
+        bun build ./src/index.js --compile --outfile quick-snmp
+        chmod +x quick-snmp
+
+    - name: Test Binary
+      run: |
+        echo "Testing built binary..."
+        ./quick-snmp --version
+        ./quick-snmp --help
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        files: quick-snmp
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

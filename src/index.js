@@ -174,6 +174,34 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
+// Show help
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(`
+QXIP SNMP Trap Sender
+
+Usage:
+  quick-snmp [options]
+
+Options:
+  --help, -h          Show this help message
+  --loopback         Run in loopback mode for testing
+  --generate-oid     Generate OID file for SNMP receivers
+  --version, -v      Show version information
+
+Examples:
+  quick-snmp                    Start the SNMP trap sender
+  quick-snmp --loopback        Run in loopback mode
+  quick-snmp --generate-oid    Generate OID file
+`);
+  process.exit(0);
+}
+
+// Show version
+if (args.includes('--version') || args.includes('-v')) {
+  console.log('QXIP SNMP Trap Sender v1.0.0');
+  process.exit(0);
+}
+
 // Check if we should generate OID file
 if (args.includes('--generate-oid')) {
   const outputPath = args[args.indexOf('--generate-oid') + 1] || 'qxip-snmp.mib';
