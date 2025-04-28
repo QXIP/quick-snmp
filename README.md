@@ -22,7 +22,7 @@ cd qxip-snmp
 
 2. Install dependencies:
 ```bash
-npm install
+bun install
 ```
 
 ## Configuration
@@ -60,12 +60,12 @@ rules:
 
 1. Start the SNMP trap sender:
 ```bash
-node src/index.js
+bun src/index.js
 ```
 
 2. Generate OID file for SNMP receivers:
 ```bash
-node src/index.js --generate-oid
+bun src/index.js --generate-oid
 ```
 
 ## Rule Configuration

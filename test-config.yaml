@@ -1,0 +1,53 @@
+# Root OID for all traps
+oidRoot: "1.3.6.1.4.1.12345"
+
+# SNMP trap receivers
+receivers:
+  - id: "loopback"
+    host: "127.0.0.1"
+    port: 1162
+    community: "public"
+
+# Monitoring rules
+rules:
+  # Simple string test
+  - id: "testString"
+    oid: "1.1"
+    name: "Test String Value"
+    type: "string"
+    command: "echo 'Hello SNMP'"
+    interval: 5
+    receivers: ["loopback"]
+
+  # Simple integer test
+  - id: "testInteger"
+    oid: "1.2"
+    name: "Test Integer Value"
+    type: "integer"
+    command: "echo 42"
+    interval: 5
+    thresholds:
+      warning: 30
+      critical: 50
+    receivers: ["loopback"]
+
+  # Simple counter test
+  - id: "testCounter"
+    oid: "1.3"
+    name: "Test Counter Value"
+    type: "integer"
+    command: "echo $RANDOM"
+    interval: 5
+    receivers: ["loopback"]
+
+  # Simple boolean test
+  - id: "testBoolean"
+    oid: "1.4"
+    name: "Test Boolean Value"
+    type: "integer"
+    command: "echo 1"
+    interval: 5
+    thresholds:
+      warning: 1
+      critical: 1
+    receivers: ["loopback"] 

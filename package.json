@@ -5,11 +5,11 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "node --test"
+    "start": "bun src/index.js",
+    "test": "bun test"
   },
   "dependencies": {
-    "net-snmp": "^3.0.0",
+    "snmp-native": "^1.2.0",
     "yaml": "^2.3.4",
     "chokidar": "^3.5.3"
   },

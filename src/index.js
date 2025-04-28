@@ -3,13 +3,16 @@ import { parse } from 'yaml';
 import { CommandExecutor } from './executor/command.js';
 import { TrapSender } from './snmp/trapSender.js';
 import { generateOidFile } from './generator/oidFile.js';
+import { LoopbackReceiver } from './snmp/loopbackReceiver.js';
 
 class SnmpTrapSender {
-  constructor(configPath) {
-    this.configPath = configPath;
+  constructor(configPath, options = {}) {
+    this.configPath = options.loopback ? 'test-config.yaml' : configPath;
     this.config = null;
     this.trapSender = null;
     this.running = false;
+    this.loopbackReceiver = null;
+    this.options = options;
   }
 
   /**
@@ -43,6 +46,13 @@ class SnmpTrapSender {
     if (this.running) return;
     
     this.loadConfig();
+
+    // Start loopback receiver if enabled
+    if (this.options.loopback) {
+      this.loopbackReceiver = new LoopbackReceiver();
+      await this.loopbackReceiver.start();
+    }
+
     this.trapSender = new TrapSender(this.config);
     this.trapSender.initialize();
     this.running = true;
@@ -53,6 +63,20 @@ class SnmpTrapSender {
     }
 
     console.log('SNMP trap sender started');
+
+    // In loopback mode, wait for one trap and then exit
+    if (this.options.loopback) {
+      try {
+        const trap = await this.loopbackReceiver.waitForTrap();
+        console.log('Successfully received trap:', trap);
+        this.stop();
+        process.exit(0);
+      } catch (error) {
+        console.error('Failed to receive trap:', error);
+        this.stop();
+        process.exit(1);
+      }
+    }
   }
 
   /**
@@ -107,14 +131,41 @@ class SnmpTrapSender {
     if (this.trapSender) {
       this.trapSender.close();
     }
+
+    if (this.loopbackReceiver) {
+      this.loopbackReceiver.stop();
+    }
     
     this.running = false;
     console.log('SNMP trap sender stopped');
   }
+
+  /**
+   * Get received traps from loopback receiver
+   * @returns {Array} Array of received traps
+   */
+  getReceivedTraps() {
+    return this.loopbackReceiver ? this.loopbackReceiver.getReceivedTraps() : [];
+  }
+
+  /**
+   * Clear received traps from loopback receiver
+   */
+  clearReceivedTraps() {
+    if (this.loopbackReceiver) {
+      this.loopbackReceiver.clearTraps();
+    }
+  }
 }
 
-// Example usage
-const sender = new SnmpTrapSender('config.yaml');
+// Parse command line arguments
+const args = process.argv.slice(2);
+const configPath = 'config.yaml';
+const options = {
+  loopback: args.includes('--loopback')
+};
+
+const sender = new SnmpTrapSender(configPath, options);
 
 // Handle process termination
 process.on('SIGINT', () => {
@@ -122,6 +173,13 @@ process.on('SIGINT', () => {
   sender.stop();
   process.exit(0);
 });
+
+// Check if we should generate OID file
+if (args.includes('--generate-oid')) {
+  const outputPath = args[args.indexOf('--generate-oid') + 1] || 'qxip-snmp.mib';
+  sender.generateOidFile(outputPath);
+  process.exit(0);
+}
 
 // Start the sender
 sender.start().catch(error => {

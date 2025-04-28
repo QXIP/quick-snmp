@@ -1,21 +1,20 @@
-import snmp from 'net-snmp';
+import { createSocket } from 'dgram';
 
 export class TrapSender {
   constructor(config) {
     this.config = config;
-    this.sessions = new Map();
+    this.socket = createSocket('udp4');
+    
+    this.socket.on('error', (error) => {
+      console.error('UDP socket error:', error);
+    });
   }
 
   /**
-   * Initialize SNMP sessions for all receivers
+   * Initialize the UDP socket
    */
   initialize() {
-    for (const receiver of this.config.receivers) {
-      const session = snmp.createSession(receiver.host, receiver.community, {
-        port: receiver.port
-      });
-      this.sessions.set(receiver.id, session);
-    }
+    // Nothing to do here, socket is created in constructor
   }
 
   /**
@@ -26,32 +25,27 @@ export class TrapSender {
    * @param {string} severity - Severity level ('critical' or 'warning')
    */
   async sendTrap(receiverIds, oid, value, severity = null) {
-    const varbinds = [
-      {
-        oid: oid,
-        type: typeof value === 'number' ? snmp.ObjectType.Integer : snmp.ObjectType.OctetString,
-        value: value
-      }
-    ];
+    // Create a simple trap message for testing
+    const trap = {
+      timestamp: new Date().toISOString(),
+      oid,
+      value,
+      severity,
+      type: typeof value
+    };
 
-    if (severity) {
-      varbinds.push({
-        oid: `${oid}.severity`,
-        type: snmp.ObjectType.OctetString,
-        value: severity
-      });
-    }
+    const message = Buffer.from(JSON.stringify(trap));
 
     for (const receiverId of receiverIds) {
-      const session = this.sessions.get(receiverId);
-      if (!session) {
-        console.error(`No session found for receiver ${receiverId}`);
+      const receiver = this.config.receivers.find(r => r.id === receiverId);
+      if (!receiver) {
+        console.error(`No receiver found for ID ${receiverId}`);
         continue;
       }
 
       try {
         await new Promise((resolve, reject) => {
-          session.trap(snmp.TrapType.EnterpriseSpecific, varbinds, (error) => {
+          this.socket.send(message, 0, message.length, receiver.port, receiver.host, (error) => {
             if (error) {
               reject(error);
             } else {
@@ -67,13 +61,10 @@ export class TrapSender {
   }
 
   /**
-   * Close all SNMP sessions
+   * Close the UDP socket
    */
   close() {
-    for (const [id, session] of this.sessions) {
-      session.close();
-      console.log(`Closed session for receiver ${id}`);
-    }
-    this.sessions.clear();
+    this.socket.close();
+    console.log('UDP socket closed');
   }
 } 
