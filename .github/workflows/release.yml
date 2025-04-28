@@ -1,9 +1,13 @@
-name: Release
+name: Release Binary
 
 on:
   push:
     tags:
       - 'v*'
+
+permissions:
+  contents: write
+  packages: write
 
 jobs:
   build:
@@ -27,11 +31,13 @@ jobs:
         bun build ./src/index.js --compile --outfile quick-snmp
         chmod +x quick-snmp
 
-    - name: Test Binary
+    - name: Test Binary (version)
       run: |
-        echo "Testing built binary..."
         ./quick-snmp --version
-        ./quick-snmp --help
+
+    - name: Test Binary (loopback)
+      run: |
+        ./quick-snmp --loopback
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
