@@ -29,6 +29,7 @@ jobs:
       run: |
         echo "Building standalone binary..."
         bun build ./src/index.js --compile --minify --outfile quick-snmp
+        strip quick-snmp
         chmod +x quick-snmp
 
     - name: Build Binary (Cross-Platform)
