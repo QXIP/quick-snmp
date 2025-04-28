@@ -1,0 +1,19 @@
+{
+  "name": "qxip-snmp",
+  "version": "1.0.0",
+  "description": "Flexible SNMP trap sender with configurable OID rules",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "net-snmp": "^3.0.0",
+    "yaml": "^2.3.4",
+    "chokidar": "^3.5.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0"
+  }
+} 

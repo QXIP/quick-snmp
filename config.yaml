@@ -1,0 +1,61 @@
+# Root OID for all traps
+oidRoot: "1.3.6.1.4.1.12345"
+
+# SNMP trap receivers
+receivers:
+  - id: "primary"
+    host: "192.168.1.100"
+    port: 162
+    community: "public"
+  
+  - id: "backup"
+    host: "192.168.1.101"
+    port: 162
+    community: "public"
+
+# Monitoring rules
+rules:
+  # CPU usage monitoring
+  - id: "cpuUsage"
+    oid: "1.1"
+    name: "CPU Usage"
+    type: "integer"
+    command: "top -bn1 | grep 'Cpu(s)' | awk '{print $2}'"
+    interval: 60
+    thresholds:
+      warning: 70
+      critical: 90
+    receivers: ["primary", "backup"]
+
+  # Memory usage monitoring
+  - id: "memoryUsage"
+    oid: "1.2"
+    name: "Memory Usage"
+    type: "integer"
+    command: "free | grep Mem | awk '{print $3/$2 * 100.0}'"
+    interval: 60
+    thresholds:
+      warning: 80
+      critical: 95
+    receivers: ["primary"]
+
+  # System uptime
+  - id: "uptime"
+    oid: "1.3"
+    name: "System Uptime"
+    type: "string"
+    command: "uptime -p"
+    interval: 300
+    receivers: ["primary", "backup"]
+
+  # Disk usage monitoring
+  - id: "diskUsage"
+    oid: "1.4"
+    name: "Disk Usage"
+    type: "integer"
+    command: "df / | tail -1 | awk '{print $5}' | sed 's/%//'"
+    interval: 300
+    thresholds:
+      warning: 80
+      critical: 90
+    receivers: ["primary"] 
